@@ -15,11 +15,11 @@ This is a web app template.
 ## Tech Stack
 
 - Frontend: Next.js, Tailwind, Shadcn, Framer Motion
-- Backend: Postgres, Supabase, Drizzle ORM, Server Actions
-- Auth: Clerk
+- Backend: Firebase, Firestore, Server Actions
+- Auth: Firebase Auth
 - Payments: Stripe
 - Analytics: PostHog
-- Deployment: Vercel
+- Deployment: Firebase Hosting
 
 ## Project Structure
 

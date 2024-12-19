@@ -13,7 +13,7 @@ import { AuthProvider } from "@/lib/context/auth-context"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Mckay's App Template",
+  title: "Mokes' App Template",
   description: "A full-stack web app template now using Firebase."
 }
 

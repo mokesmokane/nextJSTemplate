@@ -28,7 +28,7 @@ export const HeroSection = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="flex items-center justify-center"
       >
-        <Link href="https://github.com/mckaywrigley/mckays-app-template">
+        <Link href="https://github.com/mokesmokane/nextJSTemplate">
           <AnimatedGradientText>
             🚀 <hr className="mx-2 h-4 w-px shrink-0 bg-gray-300" />
             <span
@@ -58,13 +58,13 @@ export const HeroSection = () => {
           Save time and start building.
         </motion.div>
 
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
           className="max-w-xl text-balance text-xl"
         >
-          Use Mckay's app template to save time and get started with your next
+          Use Mokes' app template to save time and get started with your next
           project.
         </motion.div>
 
@@ -74,7 +74,7 @@ export const HeroSection = () => {
           transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
         >
           <Link
-            href="https://github.com/mckaywrigley/mckays-app-template"
+            href="https://github.com/mokesmokane/nextJSTemplate"
             onClick={handleGetStartedClick}
           >
             <Button className="bg-blue-500 text-lg hover:bg-blue-600">
@@ -83,20 +83,6 @@ export const HeroSection = () => {
             </Button>
           </Link>
         </motion.div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 1, ease: "easeOut" }}
-        className="mx-auto mt-20 flex w-full max-w-screen-lg items-center justify-center rounded-lg border shadow-lg"
-      >
-        <HeroVideoDialog
-          animationStyle="top-in-bottom-out"
-          videoSrc="https://www.youtube.com/embed/9yS0dR0kP-s"
-          thumbnailSrc="hero.png"
-          thumbnailAlt="Hero Video"
-        />
       </motion.div>
     </div>
   )
