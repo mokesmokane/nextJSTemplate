@@ -1,0 +1,607 @@
+# Project Instructions
+
+Use specification and guidelines as you build the app.
+
+Write the complete code for every step. Do not get lazy.
+
+Your goal is to completely finish whatever I ask for.
+
+You will see <ai_context> tags in the code. These are context tags that you should use to help you understand the codebase.
+
+## Overview
+
+This is a web app template.
+
+## Tech Stack
+
+- Frontend: Next.js, Tailwind, Shadcn, Framer Motion
+- Backend: Postgres, Supabase, Drizzle ORM, Server Actions
+- Auth: Clerk
+- Payments: Stripe
+- Analytics: PostHog
+- Deployment: Vercel
+
+## Project Structure
+
+- `actions` - Server actions
+  - `db` - Database related actions
+  - Other actions
+- `app` - Next.js app router
+  - `api` - API routes
+  - `route` - An example route
+    - `_components` - One-off components for the route
+    - `layout.tsx` - Layout for the route
+    - `page.tsx` - Page for the route
+- `components` - Shared components
+  - `ui` - UI components
+  - `utilities` - Utility components
+- `db` - Database
+  - `schema` - Database schemas
+- `lib` - Library code
+  - `hooks` - Custom hooks
+- `prompts` - Prompt files
+- `public` - Static assets
+- `types` - Type definitions
+
+## Rules
+
+Follow these rules when building the app.
+
+### General Rules
+
+- Use `@` to import anything from the app unless otherwise specified
+- Use kebab case for all files and folders unless otherwise specified
+- Don't update shadcn components unless otherwise specified
+
+#### Env Rules
+
+- If you update environment variables, update the `.env.example` file
+- All environment variables should go in `.env.local`
+- Do not expose environment variables to the frontend
+- Use `NEXT_PUBLIC_` prefix for environment variables that need to be accessed from the frontend
+- You may import environment variables in server actions and components by using `process.env.VARIABLE_NAME`
+
+#### Type Rules
+
+Follow these rules when working with types.
+
+- When importing types, use `@/types`
+- Name files like `example-types.ts`
+- All types should go in `types`
+- Make sure to export the types in `types/index.ts`
+- Prefer interfaces over type aliases
+- If referring to db types, use `@/db/schema` such as `SelectTodo` from `todos-schema.ts`
+
+An example of a type:
+
+`types/actions-types.ts`
+
+```ts
+export type ActionState<T> =
+  | { isSuccess: true; message: string; data: T }
+  | { isSuccess: false; message: string; data?: never }
+```
+
+And exporting it:
+
+`types/index.ts`
+
+```ts
+export * from "./actions-types"
+```
+
+### Frontend Rules
+
+Follow these rules when working on the frontend.
+
+It uses Next.js, Tailwind, Shadcn, and Framer Motion.
+
+#### General Rules
+
+- Use `lucide-react` for icons
+
+#### Components
+
+- Use divs instead of other html tags unless otherwise specified
+- Separate the main parts of a component's html with an extra blank line for visual spacing
+- Always tag a component with either `use server` or `use client` at the top, including layouts and pages
+
+##### Organization
+
+- All components be named using kebab case like `example-component.tsx` unless otherwise specified
+- Put components in `/_components` in the route if one-off components
+- Put components in `/components` from the root if shared components
+
+##### Data Fetching
+
+- Fetch data in server components and pass the data down as props to client components.
+- Use server actions from `/actions` to mutate data.
+
+##### Server Components
+
+- Use `"use server"` at the top of the file.
+- Implement Suspense for asynchronous data fetching to show loading states while data is being fetched.
+- If no asynchronous logic is required for a given server component, you do not need to wrap the component in `<Suspense>`. You can simply return the final UI directly since there is no async boundary needed.
+- If asynchronous fetching is required, you can use a `<Suspense>` boundary and a fallback to indicate a loading state while data is loading.
+- Server components cannot be imported into client components. If you want to use a server component in a client component, you must pass the as props using the "children" prop
+
+Example of a server layout:
+
+```tsx
+"use server"
+
+export default async function ExampleServerLayout({
+  children
+}: {
+  children: React.ReactNode
+}) {
+  return children
+}
+```
+
+Example of a server page (with async logic):
+
+```tsx
+"use server"
+
+import { Suspense } from "react"
+import { SomeAction } from "@/actions/some-actions"
+import SomeComponent from "./_components/some-component"
+import SomeSkeleton from "./_components/some-skeleton"
+
+export default async function ExampleServerPage() {
+  return (
+    <Suspense fallback={<SomeSkeleton className="some-class" />}>
+      <SomeComponentFetcher />
+    </Suspense>
+  )
+}
+
+async function SomeComponentFetcher() {
+  const { data } = await SomeAction()
+  return <SomeComponent className="some-class" initialData={data || []} />
+}
+```
+
+Example of a server page (no async logic required):
+
+```tsx
+"use server"
+
+import SomeClientComponent from "./_components/some-client-component"
+
+// In this case, no asynchronous work is being done, so no Suspense or fallback is required.
+export default async function ExampleServerPage() {
+  return <SomeClientComponent initialData={[]} />
+}
+```
+
+Example of a server component:
+
+```tsx
+"use server"
+
+interface ExampleServerComponentProps {
+  // Your props here
+}
+
+export async function ExampleServerComponent({
+  props
+}: ExampleServerComponentProps) {
+  // Your code here
+}
+```
+
+##### Client Components
+
+- Use `"use client"` at the top of the file
+- Client components can safely rely on props passed down from server components, or handle UI interactions without needing <Suspense> if there’s no async logic.
+
+Example of a client page:
+
+```tsx
+"use client"
+
+export default function ExampleClientPage() {
+  // Your code here
+}
+```
+
+Example of a client component:
+
+```tsx
+"use client"
+
+interface ExampleClientComponentProps {
+  initialData: any[]
+}
+
+export default function ExampleClientComponent({
+  initialData
+}: ExampleClientComponentProps) {
+  // Client-side logic here
+  return <div>{initialData.length} items</div>
+}
+```
+
+####Backend Rules (Firestore Version)
+Follow these rules when working on the backend with Firestore as the database.
+
+####  General Rules
+
+- Do not worry about migrations or schema enforcement at the database level—Firestore is schemaless. Instead, maintain consistent structures and validations within the application layer.
+- Keep your document structures consistent. Always define TypeScript interfaces or types for each document shape so that data consistency is enforced at the code level.
+- Use Firestore security rules and application-level logic to maintain data integrity and relationships.
+
+#### Organization
+
+- Organize your Firestore collections and documents in a clear, hierarchical manner. For example, store user data in /users/{userId} and their related sub-collections (like todos) in /users/{userId}/todos.
+- Maintain separate files for each collection or data model, and group them logically.
+
+Example:
+
+`firestore/models/todos.ts`
+
+`firestore/models/chats.ts`
+
+`firestore/models/messages.ts`
+
+Export these models (types, collection references, and utility methods) from an index.ts within firestore/models for easy imports elsewhere.
+
+#### Document Structures and Best Practices
+
+- Always include createdAt and updatedAt fields. These should be managed by the server logic when creating and updating documents.
+
+```ts
+export interface BaseDocument {
+  createdAt: FirebaseFirestore.Timestamp
+  updatedAt: FirebaseFirestore.Timestamp
+}
+Use descriptive field names that clearly indicate what data they hold.
+
+Use userId as a string field representing a user's unique identifier.
+For fields with limited, predefined sets of values (enums), enforce these constraints at the application layer (TypeScript enums or union types) and validate them before writing to Firestore.
+
+```ts
+export type MembershipLevel = 'free' | 'pro'
+```
+
+Where relationships exist (such as messages belonging to chats), store references or IDs to related documents. Use Firestore DocumentReference types to maintain a logical link, and ensure that deleting a parent document also triggers cleanup of its dependent documents via either security rules, scheduled Cloud Functions, or transactional writes.
+
+```ts
+// Example: messages referencing a chat
+export interface Message extends BaseDocument {
+  chatId: string // points to a chat document in the `/chats` collection
+  content: string
+  role: 'assistant' | 'user'
+}
+```
+
+Use Firestore collections named after the plural form of the entity they store, e.g., users, chats, messages, todos.
+
+Example of a Firestore Model File
+
+`firestore/models/todos.ts`
+
+```ts
+import { firestore } from 'firebase-admin'
+
+export interface Todo extends BaseDocument {
+  userId: string
+  content: string
+  completed: boolean
+}
+
+// A utility function to create a new Todo document reference.
+export function todoRef(userId: string, todoId: string) {
+  return firestore().collection('users').doc(userId).collection('todos').doc(todoId)
+}
+
+// Example: Creating a new Todo
+export async function createTodo(userId: string, content: string): Promise<void> {
+  const now = firestore.FieldValue.serverTimestamp()
+  const newDocRef = firestore().collection('users').doc(userId).collection('todos').doc()
+  await newDocRef.set({
+    userId,
+    content,
+    completed: false,
+    createdAt: now,
+    updatedAt: now
+  })
+}
+firestore/models/index.ts
+
+ts
+Copy code
+export * from './todos'
+export * from './chats'
+export * from './messages'
+Complex Example
+For chats and messages:
+
+firestore/models/chats.ts
+
+ts
+Copy code
+import { firestore } from 'firebase-admin'
+
+export interface Chat extends BaseDocument {
+  userId: string
+  name: string
+}
+
+// Example utility functions for chats
+export function chatRef(userId: string, chatId: string) {
+  return firestore().collection('users').doc(userId).collection('chats').doc(chatId)
+}
+
+export async function createChat(userId: string, name: string) {
+  const now = firestore.FieldValue.serverTimestamp()
+  const newChatRef = firestore().collection('users').doc(userId).collection('chats').doc()
+  await newChatRef.set({
+    userId,
+    name,
+    createdAt: now,
+    updatedAt: now
+  })
+}
+```
+
+`firestore/models/messages.ts`
+
+```ts
+import { firestore } from 'firebase-admin'
+
+export interface Message extends BaseDocument {
+  chatId: string
+  content: string
+  role: 'assistant' | 'user'
+}
+
+// Example utility functions for messages
+export function messageRef(userId: string, chatId: string, messageId: string) {
+  return firestore().collection('users').doc(userId)
+    .collection('chats').doc(chatId)
+    .collection('messages').doc(messageId)
+}
+
+export async function createMessage(userId: string, chatId: string, content: string, role: 'assistant' | 'user') {
+  const now = firestore.FieldValue.serverTimestamp()
+  const newMsgRef = firestore().collection('users').doc(userId)
+    .collection('chats').doc(chatId)
+    .collection('messages').doc()
+  
+  await newMsgRef.set({
+    chatId,
+    content,
+    role,
+    createdAt: now,
+    updatedAt: now
+  })
+}
+```
+
+#### Additional Notes
+
+- Firestore does not enforce schemas, so use TypeScript types and runtime validation (where needed) to ensure data consistency.
+- Consider using Firebase Security Rules or Cloud Functions to handle cascading deletions. For example, when a chat is deleted, trigger a function to delete all related messages.
+- Always access Firestore through typed utility functions rather than inline calls to ensure consistency and maintainability.
+
+#### Server Actions
+
+- When importing actions, use `@/actions` or `@/actions/db` if db related
+- DB related actions should go in the `actions/db` folder
+- Other actions should go in the `actions` folder
+- Name files like `example-actions.ts`
+- All actions should go in the `actions` folder
+- Only write the needed actions
+- Return an ActionState with the needed data type from actions
+- Include Action at the end of function names `Ex: exampleFunction -> exampleFunctionAction`
+- Actions should return a Promise<ActionState<T>>
+- Sort in CRUD order: Create, Read, Update, Delete
+- Make sure to return undefined as the data type if the action is not supposed to return any data
+
+```ts
+export type ActionState<T> =
+  | { isSuccess: true; message: string; data: T }
+  | { isSuccess: false; message: string; data?: never }
+```
+
+Example of an action:
+
+`actions/db/todos-actions.ts`
+
+```ts
+"use server"
+
+import { firestore } from "firebase-admin"
+import { ActionState } from "@/types"
+
+// These are example interfaces that represent the data structure in Firestore.
+export interface InsertTodo {
+  userId: string
+  content: string
+  completed?: boolean
+  createdAt?: FirebaseFirestore.FieldValue | FirebaseFirestore.Timestamp
+  updatedAt?: FirebaseFirestore.FieldValue | FirebaseFirestore.Timestamp
+}
+
+export interface SelectTodo {
+  id: string
+  userId: string
+  content: string
+  completed: boolean
+  createdAt: FirebaseFirestore.Timestamp
+  updatedAt: FirebaseFirestore.Timestamp
+}
+
+const db = firestore()
+
+// Create
+export async function createTodoAction(
+  todo: InsertTodo
+): Promise<ActionState<SelectTodo>> {
+  try {
+    const now = firestore.FieldValue.serverTimestamp()
+    const { userId, content, completed = false } = todo
+
+    // Create a new doc reference
+    const docRef = db.collection("users").doc(userId).collection("todos").doc()
+
+    // Set the document
+    await docRef.set({
+      userId,
+      content,
+      completed,
+      createdAt: now,
+      updatedAt: now
+    })
+
+    // Re-fetch the document to return it
+    const docSnap = await docRef.get()
+    const data = docSnap.data()
+    if (!data) {
+      return { isSuccess: false, message: "Failed to create todo" }
+    }
+
+    return {
+      isSuccess: true,
+      message: "Todo created successfully",
+      data: {
+        id: docSnap.id,
+        userId: data.userId,
+        content: data.content,
+        completed: data.completed,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
+      }
+    }
+  } catch (error) {
+    console.error("Error creating todo:", error)
+    return { isSuccess: false, message: "Failed to create todo" }
+  }
+}
+
+// Read
+export async function getTodosAction(
+  userId: string
+): Promise<ActionState<SelectTodo[]>> {
+  try {
+    const snapshot = await db
+      .collection("users")
+      .doc(userId)
+      .collection("todos")
+      .get()
+
+    const todos: SelectTodo[] = []
+    snapshot.forEach((doc) => {
+      const data = doc.data()
+      todos.push({
+        id: doc.id,
+        userId: data.userId,
+        content: data.content,
+        completed: data.completed,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt
+      })
+    })
+
+    return {
+      isSuccess: true,
+      message: "Todos retrieved successfully",
+      data: todos
+    }
+  } catch (error) {
+    console.error("Error getting todos:", error)
+    return { isSuccess: false, message: "Failed to get todos" }
+  }
+}
+
+// Update
+export async function updateTodoAction(
+  userId: string,
+  id: string,
+  data: Partial<InsertTodo>
+): Promise<ActionState<SelectTodo>> {
+  try {
+    const docRef = db.collection("users").doc(userId).collection("todos").doc(id)
+    const now = firestore.FieldValue.serverTimestamp()
+
+    // Update the document fields
+    await docRef.update({
+      ...data,
+      updatedAt: now
+    })
+
+    // Re-fetch the updated document
+    const docSnap = await docRef.get()
+    const updatedData = docSnap.data()
+    if (!updatedData) {
+      return { isSuccess: false, message: "Failed to update todo" }
+    }
+
+    return {
+      isSuccess: true,
+      message: "Todo updated successfully",
+      data: {
+        id: docSnap.id,
+        userId: updatedData.userId,
+        content: updatedData.content,
+        completed: updatedData.completed,
+        createdAt: updatedData.createdAt,
+        updatedAt: updatedData.updatedAt
+      }
+    }
+  } catch (error) {
+    console.error("Error updating todo:", error)
+    return { isSuccess: false, message: "Failed to update todo" }
+  }
+}
+
+// Delete
+export async function deleteTodoAction(
+  userId: string,
+  id: string
+): Promise<ActionState<void>> {
+  try {
+    await db.collection("users").doc(userId).collection("todos").doc(id).delete()
+
+    return {
+      isSuccess: true,
+      message: "Todo deleted successfully",
+      data: undefined
+    }
+  } catch (error) {
+    console.error("Error deleting todo:", error)
+    return { isSuccess: false, message: "Failed to delete todo" }
+  }
+}
+```
+
+#### Auth Rules
+
+Follow these rules when working on auth
+It uses firebase auth for authentication.
+
+#### General Rules
+
+- Use the Firebase Admin SDK in server components and server actions to authenticate users.
+- In server actions, always verify the user's ID token before performing any authenticated operations. This ensures the request is coming from a valid, signed-in user.
+- Import the necessary Firebase Admin Auth methods from the Firebase Admin SDK (for example, import { getAuth } from "firebase-admin/auth").
+- To authenticate a user in a server action:
+  - Extract the user's ID token from the request headers or cookies.
+  - Use await getAuth().verifyIdToken(idToken) to verify the token and retrieve the user's UID.
+  - Once the user is verified, you can safely perform the requested operation and return the appropriate response.
+  - If verification fails, return an error response indicating authentication failure.
+
+### Payments Rules
+
+Follow these rules when working on payments.
+
+It uses Stripe for payments.
+
+### Analytics Rules
+
+Follow these rules when working on analytics.
+
+It uses PostHog for analytics.
