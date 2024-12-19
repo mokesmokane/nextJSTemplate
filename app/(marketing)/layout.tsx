@@ -1,4 +1,4 @@
-import Header from "@/components/header"
+import { SiteHeader } from "@/components/site/SiteHeader"
 
 export default async function MarketingLayout({
   children
@@ -7,7 +7,7 @@ export default async function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <SiteHeader />
       <div className="flex-1">{children}</div>
     </div>
   )

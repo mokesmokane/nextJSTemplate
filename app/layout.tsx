@@ -1,14 +1,9 @@
-import { Toaster } from "@/components/ui/toaster"
-import { PostHogPageview } from "@/components/utilities/posthog/posthog-pageview"
-import { PostHogUserIdentify } from "@/components/utilities/posthog/posthog-user-identity"
-import { Providers } from "@/components/utilities/providers"
-import { TailwindIndicator } from "@/components/utilities/tailwind-indicator"
+import { RootProvider } from "@/components/utilities/root-provider"
 import { cn } from "@/lib/utils"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { getServerUser } from "@/lib/firebaseAdmin"
-import { AuthProvider } from "@/lib/context/auth-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,7 +17,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Attempt to get user from Firebase Admin (if logged in)
   const user = await getServerUser()
 
   return (
@@ -33,23 +27,9 @@ export default async function RootLayout({
           inter.className
         )}
       >
-        <AuthProvider serverUser={user}>
-          <Providers
-            attribute="class"
-            defaultTheme="light"
-            enableSystem={false}
-            disableTransitionOnChange
-          >
-            <PostHogUserIdentify />
-            <PostHogPageview />
-
-            {children}
-
-            <TailwindIndicator />
-
-            <Toaster />
-          </Providers>
-        </AuthProvider>
+        <RootProvider serverUser={user}>
+          {children}
+        </RootProvider>
       </body>
     </html>
   )

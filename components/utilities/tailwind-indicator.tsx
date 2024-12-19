@@ -4,9 +4,9 @@ This server component provides a tailwind indicator for the app in dev mode.
 </ai_context>
 */
 
-"use server"
+'use client'
 
-export async function TailwindIndicator() {
+export function TailwindIndicator() {
   // Don't show in production
   if (process.env.NODE_ENV === "production") return null
 
