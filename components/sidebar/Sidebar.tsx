@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { SearchForm } from "./SearchForm"
 import { SidebarFooter } from "./SidebarFooter"
 import { useSidebar } from "@/lib/context/sidebar-context"
+import { ChatForm } from "../ai-chat/chat"
 
 export function Sidebar() {
   const { isExpanded } = useSidebar()
@@ -33,6 +34,9 @@ export function Sidebar() {
           Projects
         </Button>
       </nav>
+      <div className="flex min-h-[300px] flex-col">
+        <ChatForm />
+      </div>
       <SidebarFooter isExpanded={isExpanded} />
     </div>
   )
