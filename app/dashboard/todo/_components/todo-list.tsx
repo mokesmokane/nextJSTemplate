@@ -34,15 +34,11 @@ export function TodoList({ userId, initialTodos }: TodoListProps) {
       const result = await createTodo(userId, newTodo)
       if (result) {
         setTodos(prevTodos =>
-          prevTodos.map(todo =>
-            todo.id === tempId ? result : todo
-          )
+          prevTodos.map(todo => (todo.id === tempId ? result : todo))
         )
       } else {
         // revert
-        setTodos(prevTodos =>
-          prevTodos.filter(todo => todo.id !== tempId)
-        )
+        setTodos(prevTodos => prevTodos.filter(todo => todo.id !== tempId))
       }
     }
   }
@@ -64,10 +60,8 @@ export function TodoList({ userId, initialTodos }: TodoListProps) {
   }
 
   return (
-    <div className="bg-card mx-auto mt-8 max-w-md rounded-lg p-6 shadow">
-      <h1 className="mb-4 text-center text-2xl font-bold">Todo App</h1>
-
-      <div className="mb-4 flex">
+    <div className="bg-card mx-auto w-full max-w-2xl rounded-lg border p-6 shadow-sm">
+      <div className="mb-6 flex">
         <Input
           type="text"
           value={newTodo}
@@ -78,24 +72,26 @@ export function TodoList({ userId, initialTodos }: TodoListProps) {
         />
         <Button onClick={handleAddTodo}>Add</Button>
       </div>
-      <ul className="space-y-2">
+
+      <ul className="space-y-3">
         {todos.map(todo => (
           <li
             key={todo.id}
-            className="bg-muted flex items-center justify-between rounded p-2"
+            className="bg-background flex items-center justify-between rounded-md border p-3"
           >
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
               <Checkbox
                 id={`todo-${todo.id}`}
                 checked={todo.completed}
                 onCheckedChange={() =>
                   handleToggleTodo(todo.id, todo.completed)
                 }
-                className="mr-2"
               />
               <label
                 htmlFor={`todo-${todo.id}`}
-                className={`${todo.completed ? "text-muted-foreground line-through" : ""}`}
+                className={`${
+                  todo.completed ? "text-muted-foreground line-through" : ""
+                }`}
               >
                 {todo.content}
               </label>

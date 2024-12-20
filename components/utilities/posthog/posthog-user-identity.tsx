@@ -14,7 +14,7 @@ import { auth } from "@/lib/firebaseClient"
 export function PostHogUserIdentify() {
   useEffect(() => {
     // Listen for auth state changes using the initialized auth instance
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
       if (user?.uid) {
         // Identify the user in PostHog
         posthog.identify(user.uid)

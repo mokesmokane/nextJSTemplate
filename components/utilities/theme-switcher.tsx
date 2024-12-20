@@ -16,12 +16,7 @@ interface ThemeSwitcherProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export const ThemeSwitcher = ({ children, ...props }: ThemeSwitcherProps) => {
-  const { setTheme, theme } = useTheme()
-
-  const handleChange = (theme: "dark" | "light") => {
-    localStorage.setItem("theme", theme)
-    setTheme(theme)
-  }
+  const { resolvedTheme, setTheme } = useTheme()
 
   return (
     <div
@@ -29,9 +24,9 @@ export const ThemeSwitcher = ({ children, ...props }: ThemeSwitcherProps) => {
         "p-1 hover:cursor-pointer hover:opacity-50",
         props.className
       )}
-      onClick={() => handleChange(theme === "light" ? "dark" : "light")}
+      onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
     >
-      {theme === "dark" ? (
+      {resolvedTheme === "dark" ? (
         <Moon className="size-6" />
       ) : (
         <Sun className="size-6" />

@@ -1,52 +1,72 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { onAuthStateChanged, User } from "firebase/auth"
-import { auth } from "@/lib/firebaseClient"
+import { User, onAuthStateChanged, getAuth } from "firebase/auth"
+import { app } from "@/lib/firebaseClient"
+import { UserProfileProvider } from "./user-profile-context"
 
 interface AuthContextType {
   user: User | null
-  loading: boolean
   isAuthenticated: boolean
+  isLoading: boolean
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  isAuthenticated: false
-})
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-interface AuthProviderProps {
+export function AuthProvider({
+  children,
+  serverUser
+}: {
   children: React.ReactNode
   serverUser: { uid: string } | null
-}
-
-export function AuthProvider({ children, serverUser }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(
-    serverUser ? ({ uid: serverUser.uid } as User) : null
-  )
-  const [loading, setLoading] = useState(!serverUser)
+}) {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const auth = getAuth(app)
+
+    const unsubscribe = onAuthStateChanged(auth, async user => {
       setUser(user)
-      setLoading(false)
+      setIsLoading(false)
+
+      if (user) {
+        // Create session cookie after sign in
+        try {
+          const idToken = await user.getIdToken()
+          await fetch("/api/auth/session", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ idToken })
+          })
+        } catch (error) {
+          console.error("Error creating session:", error)
+        }
+      }
     })
 
     return () => unsubscribe()
   }, [])
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        loading, 
-        isAuthenticated: !!user 
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading
       }}
     >
-      {children}
+      <UserProfileProvider>{children}</UserProfileProvider>
     </AuthContext.Provider>
   )
 }
 
-export const useAuth = () => useContext(AuthContext)
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}

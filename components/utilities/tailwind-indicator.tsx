@@ -4,7 +4,7 @@ This server component provides a tailwind indicator for the app in dev mode.
 </ai_context>
 */
 
-'use client'
+"use client"
 
 export function TailwindIndicator() {
   // Don't show in production

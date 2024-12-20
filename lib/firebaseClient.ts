@@ -1,7 +1,15 @@
 "use client"
 import { initializeApp, getApps } from "firebase/app"
 import { getAuth } from "firebase/auth"
-import { addDoc, collection, deleteDoc, doc, getDoc, getFirestore, updateDoc } from "firebase/firestore"
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getFirestore,
+  updateDoc
+} from "firebase/firestore"
 import { getAnalytics } from "firebase/analytics"
 
 const firebaseConfig = {
@@ -15,7 +23,9 @@ const firebaseConfig = {
 }
 
 // Initialize Firebase
-export const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
+export const app = getApps().length
+  ? getApps()[0]
+  : initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const firestore = getFirestore(app)
 
@@ -47,7 +57,11 @@ export async function createTodo(userId: string, content: string) {
   }
 }
 
-export async function updateTodo(userId: string, id: string, updateData: Partial<{content:string, completed:boolean}>) {
+export async function updateTodo(
+  userId: string,
+  id: string,
+  updateData: Partial<{ content: string; completed: boolean }>
+) {
   const docRef = doc(firestore, "todos", id)
   await updateDoc(docRef, {
     ...updateData,

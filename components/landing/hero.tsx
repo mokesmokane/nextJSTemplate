@@ -58,7 +58,7 @@ export const HeroSection = () => {
           Save time and start building.
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}

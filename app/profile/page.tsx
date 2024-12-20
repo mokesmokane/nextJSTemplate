@@ -1,8 +1,14 @@
-'use client'
+"use client"
 
 import { useState } from "react"
 import { SiteHeader } from "@/components/site/SiteHeader"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -11,25 +17,25 @@ import { useAuth } from "@/lib/context/auth-context"
 export default function ProfilePage() {
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
-  const [displayName, setDisplayName] = useState(user?.displayName || '')
-  const [success, setSuccess] = useState('')
-  const [error, setError] = useState('')
+  const [displayName, setDisplayName] = useState(user?.displayName || "")
+  const [success, setSuccess] = useState("")
+  const [error, setError] = useState("")
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError('')
-    setSuccess('')
+    setError("")
+    setSuccess("")
     // Placeholder for update logic
-    setSuccess('Profile updated successfully')
+    setSuccess("Profile updated successfully")
     setIsLoading(false)
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <SiteHeader />
       <div className="container mx-auto py-10">
-        <div className="max-w-2xl mx-auto">
+        <div className="mx-auto max-w-2xl">
           <Card>
             <CardHeader>
               <CardTitle>Profile Settings</CardTitle>
@@ -44,7 +50,7 @@ export default function ProfilePage() {
                   <Input
                     id="email"
                     type="email"
-                    value={user?.email || ''}
+                    value={user?.email || ""}
                     disabled
                   />
                 </div>
@@ -54,7 +60,7 @@ export default function ProfilePage() {
                   <Input
                     id="displayName"
                     value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
+                    onChange={e => setDisplayName(e.target.value)}
                     placeholder="Enter your display name"
                   />
                 </div>
@@ -63,7 +69,7 @@ export default function ProfilePage() {
                 {success && <p className="text-sm text-green-500">{success}</p>}
 
                 <Button type="submit" disabled={isLoading}>
-                  {isLoading ? 'Saving...' : 'Save Changes'}
+                  {isLoading ? "Saving..." : "Save Changes"}
                 </Button>
               </form>
             </CardContent>

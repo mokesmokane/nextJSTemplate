@@ -4,18 +4,18 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
 export function RouteGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !user) {
       router.push("/login")
     }
-  }, [user, loading, router])
+  }, [user, isLoading, router])
 
-  if (loading) {
+  if (isLoading) {
     return <div>Loading...</div>
   }
 
   return user ? <>{children}</> : null
-} 
+}

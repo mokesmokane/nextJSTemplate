@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { AuthProvider } from "@/lib/context/auth-context"
 import { SidebarProvider } from "@/lib/context/sidebar-context"
@@ -28,9 +28,7 @@ export function RootProvider({ children, serverUser }: RootProviderProps) {
           <PostHogPageview />
 
           <SubscriptionProvider>
-            <SidebarProvider>
-              {children}
-            </SidebarProvider>
+            <SidebarProvider>{children}</SidebarProvider>
           </SubscriptionProvider>
 
           <Toaster />
@@ -39,4 +37,4 @@ export function RootProvider({ children, serverUser }: RootProviderProps) {
       <TailwindIndicator />
     </>
   )
-} 
+}

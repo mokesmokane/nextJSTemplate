@@ -1,35 +1,48 @@
 import { cookies } from "next/headers"
-import { getAuth } from "firebase-admin/auth"
 import { NextResponse } from "next/server"
+import { getAuth } from "firebase-admin/auth"
+
+// 5 days in seconds - matches Firebase default
+const SESSION_LENGTH = 60 * 60 * 24 * 5 * 1000
 
 export async function POST(request: Request) {
   try {
     const { idToken } = await request.json()
-    
-    // Verify the ID token
-    const decodedToken = await getAuth().verifyIdToken(idToken)
-    
+
+    if (!idToken) {
+      return NextResponse.json(
+        { error: "Id token is required" },
+        { status: 400 }
+      )
+    }
+
     // Create session cookie
-    const expiresIn = 60 * 60 * 24 * 5 * 1000 // 5 days
     const sessionCookie = await getAuth().createSessionCookie(idToken, {
-      expiresIn
+      expiresIn: SESSION_LENGTH
     })
-    
-    // Wait for cookies
+
+    // Set cookie
     const cookieStore = await cookies()
     cookieStore.set("session", sessionCookie, {
-      maxAge: expiresIn,
+      maxAge: SESSION_LENGTH,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/"
     })
-    
-    return NextResponse.json({ status: "success" })
+
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Session creation error:", error)
+    console.error("Error creating session:", error)
     return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
+      { error: "Internal server error" },
+      { status: 500 }
     )
   }
-} 
+}
+
+export async function DELETE() {
+  const cookieStore = await cookies()
+  cookieStore.delete("session")
+  return NextResponse.json({ success: true })
+}

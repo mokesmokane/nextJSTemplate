@@ -24,10 +24,10 @@ export function EmailLinkAuth() {
       }
 
       await sendSignInLinkToEmail(auth, email, actionCodeSettings)
-      
+
       // Save the email locally to complete sign in
       window.localStorage.setItem("emailForSignIn", email)
-      
+
       setSent(true)
     } catch (error) {
       console.error("Error sending sign-in link:", error)
@@ -58,13 +58,9 @@ export function EmailLinkAuth() {
           required
         />
       </div>
-      <Button 
-        type="submit" 
-        className="w-full"
-        disabled={loading}
-      >
+      <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Sending..." : "Send login link"}
       </Button>
     </form>
   )
-} 
+}

@@ -1,8 +1,9 @@
-import { initializeApp, cert, getApps } from "firebase-admin/app"
+import { cert, getApps, initializeApp } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"
 import { getFirestore } from "firebase-admin/firestore"
 import { cookies } from "next/headers"
 
+// Only initialize the app if it hasn't been initialized
 if (!getApps().length) {
   initializeApp({
     credential: cert({
@@ -13,8 +14,8 @@ if (!getApps().length) {
   })
 }
 
-const adminAuth = getAuth()
-const db = getFirestore()
+export const adminAuth = getAuth()
+export const adminDb = getFirestore()
 
 export async function getServerUser() {
   const cookieStore = await cookies()
@@ -29,8 +30,18 @@ export async function getServerUser() {
 }
 
 export async function getUserTodos(userId: string) {
-  const snapshot = await db.collection("todos").where("userId", "==", userId).get()
-  const todos: {id:string, userId:string, content:string, completed:boolean, createdAt:string, updatedAt:string}[] = []
+  const snapshot = await adminDb
+    .collection("todos")
+    .where("userId", "==", userId)
+    .get()
+  const todos: {
+    id: string
+    userId: string
+    content: string
+    completed: boolean
+    createdAt: string
+    updatedAt: string
+  }[] = []
   snapshot.forEach(doc => {
     const data = doc.data()
     todos.push({

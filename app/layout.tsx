@@ -27,9 +27,7 @@ export default async function RootLayout({
           inter.className
         )}
       >
-        <RootProvider serverUser={user}>
-          {children}
-        </RootProvider>
+        <RootProvider serverUser={user}>{children}</RootProvider>
       </body>
     </html>
   )
