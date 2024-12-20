@@ -3,7 +3,14 @@
 import React, { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useChat } from "ai/react"
-import { ArrowUpIcon, MessageCircle } from "lucide-react"
+import {
+  ArrowUpIcon,
+  MessageCircle,
+  Play,
+  Square,
+  Maximize2,
+  Minimize2
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,
@@ -12,6 +19,16 @@ import {
 } from "@/components/ui/tooltip"
 import { AutoResizeTextarea } from "@/components/ai-chat/autoresize-textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 export function ChatForm({
   className,
@@ -36,6 +53,9 @@ export function ChatForm({
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null)
   const peerConnection = useRef<RTCPeerConnection | null>(null)
   const audioElement = useRef<HTMLAudioElement | null>(null)
+
+  const [showRealtimeDialog, setShowRealtimeDialog] = useState(false)
+  const [realtimeMode, setRealtimeMode] = useState<"voice" | "text">("text")
 
   const handlePopOutToggle = () => {
     setIsPoppedOut(!isPoppedOut)
@@ -176,30 +196,118 @@ export function ChatForm({
         {messages.length ? messageList : <div>No messages yet</div>}
       </div>
       <div className="shrink-0">
-        <form
-          onSubmit={handleSubmit}
-          className="border-input bg-background focus-within:ring-ring/10 relative mx-6 mb-6 flex items-center rounded-[16px] border px-3 py-1.5 pr-8 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-0"
-        >
-          <AutoResizeTextarea
-            onKeyDown={handleKeyDown}
-            onChange={v => setInput(v)}
-            value={input}
-            placeholder="Enter a message"
-            className="placeholder:text-muted-foreground flex-1 bg-transparent focus:outline-none"
-          />
+        <div className="mx-6 mb-6 flex items-center gap-2">
+          <form
+            onSubmit={handleSubmit}
+            className="border-input bg-background focus-within:ring-ring/10 relative flex flex-1 items-center gap-2 rounded-[16px] border px-3 py-1.5 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-0"
+          >
+            <AutoResizeTextarea
+              onKeyDown={handleKeyDown}
+              onChange={v => setInput(v)}
+              value={input}
+              placeholder="Enter a message"
+              className="placeholder:text-muted-foreground flex-1 bg-transparent focus:outline-none"
+            />
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="sm"
+                  className="size-8 rounded-full"
+                >
+                  <ArrowUpIcon size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Submit</TooltipContent>
+            </Tooltip>
+          </form>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
+                type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute bottom-1 right-1 size-6 rounded-full"
+                onClick={
+                  isSessionActive
+                    ? stopSession
+                    : () => setShowRealtimeDialog(true)
+                }
+                className={cn(
+                  "size-8 rounded-full",
+                  isSessionActive
+                    ? "hover:bg-red-100 hover:text-red-600"
+                    : "hover:bg-green-100 hover:text-green-600"
+                )}
               >
-                <ArrowUpIcon size={16} />
+                {isSessionActive ? (
+                  <Square className="size-4" />
+                ) : (
+                  <Play className="size-4" />
+                )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent sideOffset={12}>Submit</TooltipContent>
+            <TooltipContent>
+              {isSessionActive ? "Stop Session" : "Start Realtime Session"}
+            </TooltipContent>
           </Tooltip>
-        </form>
+        </div>
+
+        <Dialog open={showRealtimeDialog} onOpenChange={setShowRealtimeDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Start Realtime Session</DialogTitle>
+              <DialogDescription>
+                Choose how you'd like to interact with the AI assistant in
+                real-time.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-6">
+              <RadioGroup
+                value={realtimeMode}
+                onValueChange={value =>
+                  setRealtimeMode(value as "voice" | "text")
+                }
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="voice" id="voice" />
+                  <Label htmlFor="voice">Voice Conversation</Label>
+                </div>
+                <div className="mt-2 text-sm text-gray-500">
+                  Speak naturally with the AI using your microphone
+                </div>
+
+                <div className="mt-4 flex items-center space-x-2">
+                  <RadioGroupItem value="text" id="text" />
+                  <Label htmlFor="text">Real-time Text</Label>
+                </div>
+                <div className="mt-2 text-sm text-gray-500">
+                  Chat with faster, streaming responses
+                </div>
+              </RadioGroup>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowRealtimeDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowRealtimeDialog(false)
+                  startSession()
+                }}
+              >
+                Start Session
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </main>
   )
@@ -318,17 +426,13 @@ export function ChatForm({
             <CardTitle className="flex-1 text-sm font-medium">
               AI Assistant
             </CardTitle>
-            {!isSessionActive ? (
-              <Button variant="outline" size="sm" onClick={startSession}>
-                Start Realtime Chat
-              </Button>
-            ) : (
-              <Button variant="destructive" size="sm" onClick={stopSession}>
-                Stop Realtime Chat
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={handlePopOutToggle}>
-              Pop Out
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handlePopOutToggle}
+              className="size-8 rounded-full hover:bg-blue-100 hover:text-blue-600"
+            >
+              <Maximize2 className="size-4" />
             </Button>
           </div>
         </CardHeader>
@@ -364,17 +468,13 @@ export function ChatForm({
       >
         <MessageCircle className="size-5" />
         <span className="ml-2 flex-1 text-sm font-medium">AI Assistant</span>
-        {!isSessionActive ? (
-          <Button variant="outline" size="sm" onClick={startSession}>
-            Start Realtime Chat
-          </Button>
-        ) : (
-          <Button variant="destructive" size="sm" onClick={stopSession}>
-            Stop Realtime Chat
-          </Button>
-        )}
-        <Button variant="outline" size="sm" onClick={handlePopOutToggle}>
-          Dock
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handlePopOutToggle}
+          className="size-8 rounded-full hover:bg-blue-100 hover:text-blue-600"
+        >
+          <Minimize2 className="size-4" />
         </Button>
       </div>
       <div className="flex min-h-0 flex-1 flex-col">{mainContent}</div>

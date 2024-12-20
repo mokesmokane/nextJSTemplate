@@ -105,3 +105,41 @@ Global styles for the app.
   background: rgba(102, 102, 102, 0.4);
   border-radius: 3px;
 }
+
+.rdp {
+  --rdp-cell-size: 36px;
+  margin: 0;
+}
+
+/* Subtle dot for dates with content */
+.rdp-day_hasContent::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  background-color: currentColor;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+/* Remove previous hover animations for a more minimal feel */
+.rdp-day:hover:not([disabled]) {
+  transition: background-color 0.2s ease;
+}
+
+.rdp-day_selected {
+  font-weight: 500;
+}
+
+/* Add subtle grid lines */
+.rdp-cell {
+  border-bottom: 1px solid var(--border);
+}
+
+.rdp-head_cell {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
