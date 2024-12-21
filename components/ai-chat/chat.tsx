@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { AIVoiceVisualizer } from "@/components/ai-chat/ai-voice-visualizer"
+import { useRealtimeAudio } from "@/lib/hooks/use-realtime-audio"
 
 export function ChatForm({
   className,
@@ -48,14 +50,25 @@ export function ChatForm({
   const initialSize = useRef({ width: 0, height: 0 })
   const initialPosition = useRef({ x: 0, y: 0 })
 
-  // Realtime session states
-  const [isSessionActive, setIsSessionActive] = useState(false)
-  const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null)
-  const peerConnection = useRef<RTCPeerConnection | null>(null)
-  const audioElement = useRef<HTMLAudioElement | null>(null)
-
   const [showRealtimeDialog, setShowRealtimeDialog] = useState(false)
-  const [realtimeMode, setRealtimeMode] = useState<"voice" | "text">("text")
+
+  const {
+    isSessionActive,
+    dataChannel,
+    audioLevels,
+    userAudioLevels,
+    realtimeMode,
+    voice,
+    startSession,
+    stopSession,
+    setRealtimeMode,
+    setVoice
+  } = useRealtimeAudio({
+    onDataChannelMessage: e => {
+      // Handle incoming messages if desired
+      // console.log("Realtime event:", JSON.parse(e.data))
+    }
+  })
 
   const handlePopOutToggle = () => {
     setIsPoppedOut(!isPoppedOut)
@@ -97,79 +110,6 @@ export function ChatForm({
     }
   }
 
-  // Start a realtime session
-  async function startSession() {
-    try {
-      const tokenResponse = await fetch("/api/realtime-token")
-      const data = await tokenResponse.json()
-      const EPHEMERAL_KEY = data.client_secret.value
-
-      const pc = new RTCPeerConnection()
-
-      // Set up to play remote audio from the model
-      audioElement.current = document.createElement("audio")
-      audioElement.current.autoplay = true
-      pc.ontrack = e => (audioElement.current!.srcObject = e.streams[0])
-
-      // Add local audio track for microphone input
-      const ms = await navigator.mediaDevices.getUserMedia({
-        audio: true
-      })
-      pc.addTrack(ms.getTracks()[0])
-
-      const dc = pc.createDataChannel("oai-events")
-      setDataChannel(dc)
-
-      const offer = await pc.createOffer()
-      await pc.setLocalDescription(offer)
-
-      const baseUrl = "https://api.openai.com/v1/realtime"
-      const model = "gpt-4o-realtime-preview-2024-12-17"
-      const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
-        method: "POST",
-        body: offer.sdp,
-        headers: {
-          Authorization: `Bearer ${EPHEMERAL_KEY}`,
-          "Content-Type": "application/sdp"
-        }
-      })
-
-      const answer = new RTCSessionDescription({
-        type: "answer",
-        sdp: await sdpResponse.text()
-      })
-      await pc.setRemoteDescription(answer)
-
-      peerConnection.current = pc
-    } catch (err) {
-      console.error("Failed to start realtime session:", err)
-    }
-  }
-
-  function stopSession() {
-    if (dataChannel) {
-      dataChannel.close()
-    }
-    if (peerConnection.current) {
-      peerConnection.current.close()
-    }
-    setIsSessionActive(false)
-    setDataChannel(null)
-    peerConnection.current = null
-  }
-
-  useEffect(() => {
-    if (dataChannel) {
-      dataChannel.addEventListener("open", () => {
-        setIsSessionActive(true)
-      })
-      dataChannel.addEventListener("message", e => {
-        // Handle incoming messages if desired
-        // console.log("Realtime event:", JSON.parse(e.data))
-      })
-    }
-  }, [dataChannel])
-
   const messageList = (
     <div className="my-4 flex h-fit min-h-full flex-col gap-4">
       {messages.map((message, index) => (
@@ -193,36 +133,57 @@ export function ChatForm({
       {...props}
     >
       <div className="min-h-0 flex-1 content-center overflow-y-auto px-6 [&::-webkit-scrollbar]:hidden">
-        {messages.length ? messageList : <div>No messages yet</div>}
+        {isSessionActive ? (
+          <AIVoiceVisualizer
+            isActive={isSessionActive}
+            audioLevels={audioLevels}
+          />
+        ) : messages.length ? (
+          messageList
+        ) : (
+          <div className="text-muted-foreground text-center">
+            No messages yet
+          </div>
+        )}
       </div>
       <div className="shrink-0">
         <div className="mx-6 mb-6 flex items-center gap-2">
-          <form
-            onSubmit={handleSubmit}
-            className="border-input bg-background focus-within:ring-ring/10 relative flex flex-1 items-center gap-2 rounded-[16px] border px-3 py-1.5 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-0"
-          >
-            <AutoResizeTextarea
-              onKeyDown={handleKeyDown}
-              onChange={v => setInput(v)}
-              value={input}
-              placeholder="Enter a message"
-              className="placeholder:text-muted-foreground flex-1 bg-transparent focus:outline-none"
-            />
+          <div className="flex-1">
+            {isSessionActive ? (
+              <AIVoiceVisualizer
+                isActive={isSessionActive}
+                audioLevels={userAudioLevels}
+                className="w-full"
+              />
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                className="border-input bg-background focus-within:ring-ring/10 relative flex flex-1 items-center gap-2 rounded-[16px] border px-3 py-1.5 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-0"
+              >
+                <AutoResizeTextarea
+                  onKeyDown={handleKeyDown}
+                  onChange={v => setInput(v)}
+                  value={input}
+                  placeholder="Enter a message"
+                  className="placeholder:text-muted-foreground flex-1 bg-transparent focus:outline-none"
+                />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="submit"
-                  variant="ghost"
-                  size="sm"
-                  className="size-8 rounded-full"
-                >
-                  <ArrowUpIcon size={16} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Submit</TooltipContent>
-            </Tooltip>
-          </form>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      size="sm"
+                      className="size-8 rounded-full"
+                    >
+                      <ArrowUpIcon size={16} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Submit</TooltipContent>
+                </Tooltip>
+              </form>
+            )}
+          </div>
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -254,7 +215,6 @@ export function ChatForm({
             </TooltipContent>
           </Tooltip>
         </div>
-
         <Dialog open={showRealtimeDialog} onOpenChange={setShowRealtimeDialog}>
           <DialogContent>
             <DialogHeader>
@@ -269,25 +229,55 @@ export function ChatForm({
               <RadioGroup
                 value={realtimeMode}
                 onValueChange={value =>
-                  setRealtimeMode(value as "voice" | "text")
+                  setRealtimeMode(value as "debug" | "openai")
                 }
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="voice" id="voice" />
-                  <Label htmlFor="voice">Voice Conversation</Label>
+                  <RadioGroupItem value="openai" id="openai" />
+                  <Label htmlFor="openai">Voice Conversation</Label>
                 </div>
                 <div className="mt-2 text-sm text-gray-500">
                   Speak naturally with the AI using your microphone
                 </div>
 
                 <div className="mt-4 flex items-center space-x-2">
-                  <RadioGroupItem value="text" id="text" />
-                  <Label htmlFor="text">Real-time Text</Label>
+                  <RadioGroupItem value="debug" id="debug" />
+                  <Label htmlFor="debug">Debug Mode</Label>
                 </div>
                 <div className="mt-2 text-sm text-gray-500">
-                  Chat with faster, streaming responses
+                  Debug mode will not connect to the AI assistant.
                 </div>
               </RadioGroup>
+
+              {realtimeMode === "openai" && (
+                <div className="mt-6">
+                  <Label>Voice</Label>
+                  <RadioGroup
+                    value={voice}
+                    onValueChange={setVoice}
+                    className="mt-2"
+                  >
+                    {[
+                      { id: "alloy", label: "Alloy" },
+                      { id: "ash", label: "Ash" },
+                      { id: "ballad", label: "Ballad" },
+                      { id: "coral", label: "Coral" },
+                      { id: "echo", label: "Echo" },
+                      { id: "sage", label: "Sage" },
+                      { id: "shimmer", label: "Shimmer" },
+                      { id: "verse", label: "Verse" }
+                    ].map(voice => (
+                      <div
+                        key={voice.id}
+                        className="flex items-center space-x-2"
+                      >
+                        <RadioGroupItem value={voice.id} id={voice.id} />
+                        <Label htmlFor={voice.id}>{voice.label}</Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+              )}
             </div>
 
             <DialogFooter>
