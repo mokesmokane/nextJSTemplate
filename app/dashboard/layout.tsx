@@ -25,12 +25,18 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <SiteHeader />
+      <div className="fixed top-0 z-50 w-full">
+        <SiteHeader />
+      </div>
 
-      <div className="flex flex-1">
-        <Sidebar />
+      <div className="flex pt-16">
+        <aside className="fixed left-0 h-[calc(100vh-4rem)] w-64">
+          <Sidebar />
+        </aside>
 
-        <div className="flex-1 p-8">{children}</div>
+        <main className="ml-64 h-[calc(100vh-8rem)] flex-1 overflow-y-auto">
+          <div className="p-8">{children}</div>
+        </main>
       </div>
     </div>
   )

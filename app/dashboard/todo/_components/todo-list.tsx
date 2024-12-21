@@ -60,53 +60,55 @@ export function TodoList({ userId, initialTodos }: TodoListProps) {
   }
 
   return (
-    <div className="bg-card mx-auto w-full max-w-2xl rounded-lg border p-6 shadow-sm">
-      <div className="mb-6 flex">
-        <Input
-          type="text"
-          value={newTodo}
-          onChange={e => setNewTodo(e.target.value)}
-          placeholder="Add a new todo"
-          className="mr-2"
-          onKeyDown={e => e.key === "Enter" && handleAddTodo()}
-        />
-        <Button onClick={handleAddTodo}>Add</Button>
-      </div>
+    <div className="flex h-full flex-col overflow-auto">
+      <div className="bg-card mx-auto w-full max-w-2xl rounded-lg border p-6 shadow-sm">
+        <div className="mb-6 flex">
+          <Input
+            type="text"
+            value={newTodo}
+            onChange={e => setNewTodo(e.target.value)}
+            placeholder="Add a new todo"
+            className="mr-2"
+            onKeyDown={e => e.key === "Enter" && handleAddTodo()}
+          />
+          <Button onClick={handleAddTodo}>Add</Button>
+        </div>
 
-      <ul className="space-y-3">
-        {todos.map(todo => (
-          <li
-            key={todo.id}
-            className="bg-background flex items-center justify-between rounded-md border p-3"
-          >
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id={`todo-${todo.id}`}
-                checked={todo.completed}
-                onCheckedChange={() =>
-                  handleToggleTodo(todo.id, todo.completed)
-                }
-              />
-              <label
-                htmlFor={`todo-${todo.id}`}
-                className={`${
-                  todo.completed ? "text-muted-foreground line-through" : ""
-                }`}
-              >
-                {todo.content}
-              </label>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleRemoveTodo(todo.id)}
+        <ul className="space-y-3">
+          {todos.map(todo => (
+            <li
+              key={todo.id}
+              className="bg-background flex items-center justify-between rounded-md border p-3"
             >
-              <Trash2 className="size-4" />
-              <span className="sr-only">Delete todo</span>
-            </Button>
-          </li>
-        ))}
-      </ul>
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id={`todo-${todo.id}`}
+                  checked={todo.completed}
+                  onCheckedChange={() =>
+                    handleToggleTodo(todo.id, todo.completed)
+                  }
+                />
+                <label
+                  htmlFor={`todo-${todo.id}`}
+                  className={`${
+                    todo.completed ? "text-muted-foreground line-through" : ""
+                  }`}
+                >
+                  {todo.content}
+                </label>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleRemoveTodo(todo.id)}
+              >
+                <Trash2 className="size-4" />
+                <span className="sr-only">Delete todo</span>
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   )
 }
