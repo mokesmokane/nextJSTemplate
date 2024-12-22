@@ -30,11 +30,8 @@ export default async function DashboardLayout({
       </div>
 
       <div className="flex pt-16">
-        <aside className="fixed left-0 h-[calc(100vh-4rem)] w-64">
-          <Sidebar />
-        </aside>
-
-        <main className="ml-64 h-[calc(100vh-8rem)] flex-1 overflow-y-auto">
+        <Sidebar />
+        <main className="h-[calc(100vh-8rem)] flex-1 overflow-y-auto">
           <div className="p-8">{children}</div>
         </main>
       </div>

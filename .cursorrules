@@ -417,23 +417,6 @@ Example of an action:
 import { firestore } from "firebase-admin"
 import { ActionState } from "@/types"
 
-// These are example interfaces that represent the data structure in Firestore.
-export interface InsertTodo {
-  userId: string
-  content: string
-  completed?: boolean
-  createdAt?: FirebaseFirestore.FieldValue | FirebaseFirestore.Timestamp
-  updatedAt?: FirebaseFirestore.FieldValue | FirebaseFirestore.Timestamp
-}
-
-export interface SelectTodo {
-  id: string
-  userId: string
-  content: string
-  completed: boolean
-  createdAt: FirebaseFirestore.Timestamp
-  updatedAt: FirebaseFirestore.Timestamp
-}
 
 const db = firestore()
 
